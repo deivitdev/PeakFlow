@@ -1,0 +1,5 @@
+ALTER TABLE Activity ADD COLUMN weightedAverageWatts REAL;
+ALTER TABLE Activity ADD COLUMN maxWatts REAL;
+ALTER TABLE Activity ADD COLUMN deviceWatts INTEGER;
+ALTER TABLE Activity ADD COLUMN gearName TEXT;
+ALTER TABLE Activity ADD COLUMN splitsJson TEXT;

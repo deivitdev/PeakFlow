@@ -1,0 +1,42 @@
+# JetBrains IDE
+.idea/
+*.iml
+*.iws
+.kotlin/
+
+# Gradle
+.gradle/
+build/
+**/build/
+gradle-app.setting
+!src/**/build/
+
+# Android
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aar
+*.bundle
+
+# Secrets and Environment
+.env
+.env.*
+secrets.xml
+
+# macOS
+.DS_Store
+
+# iOS
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# OS generated files
+Icon?
+ehthumbs.db
+Thumbs.db

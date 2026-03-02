@@ -1,0 +1,120 @@
+CREATE TABLE Activity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    distance REAL NOT NULL,
+    movingTime INTEGER NOT NULL,
+    elapsedTime INTEGER NOT NULL,
+    totalElevationGain REAL NOT NULL,
+    startDate TEXT NOT NULL,
+    averageSpeed REAL NOT NULL,
+    maxSpeed REAL NOT NULL,
+    averageHeartRate REAL,
+    maxHeartRate REAL,
+    calories REAL,
+    kilojoules REAL,
+    sufferScore REAL,
+    averagePower REAL,
+    location TEXT,
+    polyline TEXT,
+    weightedAverageWatts REAL,
+    maxWatts REAL,
+    deviceWatts INTEGER, -- 0: false, 1: true
+    averageTemp INTEGER,
+    elevHigh REAL,
+    elevLow REAL,
+    deviceName TEXT,
+    gearName TEXT,
+    gearDistance INTEGER,
+    splitsJson TEXT, -- JSON blob for kilometer splits
+    bestEffortsJson TEXT, -- JSON blob for best effort records
+    streams TEXT, -- JSON blob for time-series data
+    z1Seconds INTEGER DEFAULT 0,
+    z2Seconds INTEGER DEFAULT 0,
+    z3Seconds INTEGER DEFAULT 0,
+    z4Seconds INTEGER DEFAULT 0,
+    z5Seconds INTEGER DEFAULT 0
+);
+
+CREATE TABLE Token (
+    id TEXT NOT NULL PRIMARY KEY,
+    accessToken TEXT NOT NULL,
+    refreshToken TEXT NOT NULL,
+    expiresAt INTEGER NOT NULL
+);
+
+insertActivity:
+INSERT OR REPLACE INTO Activity(
+    id, name, type, distance, movingTime, elapsedTime,
+    totalElevationGain, startDate, averageSpeed, maxSpeed,
+    averageHeartRate, maxHeartRate, calories, kilojoules,
+    sufferScore, averagePower, location, polyline,
+    weightedAverageWatts, maxWatts, deviceWatts,
+    averageTemp, elevHigh, elevLow, deviceName, gearName, gearDistance,
+    splitsJson, bestEffortsJson, streams,
+    z1Seconds, z2Seconds, z3Seconds, z4Seconds, z5Seconds
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectSummedZonesInRange:
+SELECT 
+    SUM(z1Seconds) AS z1, 
+    SUM(z2Seconds) AS z2, 
+    SUM(z3Seconds) AS z3, 
+    SUM(z4Seconds) AS z4, 
+    SUM(z5Seconds) AS z5
+FROM Activity 
+WHERE startDate >= ? AND startDate <= ?;
+selectAllActivities:
+SELECT * FROM Activity ORDER BY startDate DESC;
+
+getActivityById:
+SELECT * FROM Activity WHERE id = ?;
+
+insertToken:
+INSERT OR REPLACE INTO Token(id, accessToken, refreshToken, expiresAt)
+VALUES (?, ?, ?, ?);
+
+getToken:
+SELECT * FROM Token WHERE id = ?;
+
+deleteToken:
+DELETE FROM Token WHERE id = ?;
+
+CREATE TABLE UserProfile (
+    id INTEGER PRIMARY KEY CHECK (id = 0), -- Singleton table
+    name TEXT NOT NULL,
+    weight REAL NOT NULL,
+    height REAL NOT NULL,
+    isDarkMode INTEGER, -- NULL: system, 0: light, 1: dark
+    language TEXT, -- 'en' or 'es'
+    profilePhotoUrl TEXT,
+    ftpWatts INTEGER,
+    hrMax INTEGER,
+    weeklyGoalHours REAL
+);
+
+upsertUserProfile:
+INSERT OR REPLACE INTO UserProfile(id, name, weight, height, isDarkMode, language, profilePhotoUrl, ftpWatts, hrMax, weeklyGoalHours)
+VALUES (0, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getUserProfile:
+SELECT * FROM UserProfile WHERE id = 0;
+
+CREATE TABLE DailyLoad (
+    date TEXT NOT NULL PRIMARY KEY, -- YYYY-MM-DD
+    tss REAL NOT NULL DEFAULT 0.0
+);
+
+upsertDailyLoad:
+INSERT OR REPLACE INTO DailyLoad(date, tss)
+VALUES (?, ?);
+
+getDailyLoadsInRange:
+SELECT * FROM DailyLoad WHERE date >= ? AND date <= ? ORDER BY date ASC;
+
+getAllDailyLoads:
+SELECT * FROM DailyLoad ORDER BY date ASC;
+
+clearDailyLoads:
+DELETE FROM DailyLoad;

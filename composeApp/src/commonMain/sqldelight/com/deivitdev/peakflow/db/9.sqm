@@ -1,0 +1,4 @@
+CREATE TABLE DailyLoad (
+    date TEXT NOT NULL PRIMARY KEY, -- YYYY-MM-DD
+    tss REAL NOT NULL DEFAULT 0.0
+);

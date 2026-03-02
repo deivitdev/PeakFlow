@@ -1,0 +1,5 @@
+ALTER TABLE Activity ADD COLUMN averagePower REAL;
+ALTER TABLE Activity ADD COLUMN location TEXT;
+ALTER TABLE Activity ADD COLUMN polyline TEXT;
+
+ALTER TABLE UserProfile ADD COLUMN profilePhotoUrl TEXT;

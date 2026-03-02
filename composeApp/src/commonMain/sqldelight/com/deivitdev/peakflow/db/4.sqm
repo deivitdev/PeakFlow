@@ -1,0 +1,6 @@
+ALTER TABLE Activity ADD COLUMN averageHeartRate REAL;
+ALTER TABLE Activity ADD COLUMN maxHeartRate REAL;
+ALTER TABLE Activity ADD COLUMN calories REAL;
+ALTER TABLE Activity ADD COLUMN kilojoules REAL;
+ALTER TABLE Activity ADD COLUMN sufferScore INTEGER;
+ALTER TABLE Activity ADD COLUMN streams TEXT;

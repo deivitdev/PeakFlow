@@ -1,0 +1,26 @@
+ALTER TABLE Activity RENAME TO Activity_old;
+
+CREATE TABLE Activity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    distance REAL NOT NULL,
+    movingTime INTEGER NOT NULL,
+    elapsedTime INTEGER NOT NULL,
+    totalElevationGain REAL NOT NULL,
+    startDate TEXT NOT NULL,
+    averageSpeed REAL NOT NULL,
+    maxSpeed REAL NOT NULL,
+    averageHeartRate REAL,
+    maxHeartRate REAL,
+    calories REAL,
+    kilojoules REAL,
+    sufferScore REAL, -- Changed from INTEGER to REAL
+    streams TEXT
+);
+
+INSERT INTO Activity (id, name, type, distance, movingTime, elapsedTime, totalElevationGain, startDate, averageSpeed, maxSpeed, averageHeartRate, maxHeartRate, calories, kilojoules, sufferScore, streams)
+SELECT id, name, type, distance, movingTime, elapsedTime, totalElevationGain, startDate, averageSpeed, maxSpeed, averageHeartRate, maxHeartRate, calories, kilojoules, CAST(sufferScore AS REAL), streams
+FROM Activity_old;
+
+DROP TABLE Activity_old;
