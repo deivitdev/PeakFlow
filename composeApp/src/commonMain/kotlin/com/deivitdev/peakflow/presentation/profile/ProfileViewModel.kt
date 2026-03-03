@@ -7,7 +7,6 @@ import com.deivitdev.peakflow.domain.repository.ActivityRepository
 import com.deivitdev.peakflow.domain.usecase.GetUserProfileUseCase
 import com.deivitdev.peakflow.domain.usecase.SaveUserProfileUseCase
 import com.deivitdev.peakflow.Platform
-import com.deivitdev.peakflow.getPlatform
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -30,7 +29,7 @@ class ProfileViewModel(
     private val saveUserProfileUseCase: SaveUserProfileUseCase,
     private val activityRepository: ActivityRepository,
     private val calculateRelativePowerUseCase: com.deivitdev.peakflow.domain.usecase.CalculateRelativePowerUseCase,
-    private val platform: Platform = getPlatform()
+    private val platform: Platform
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -61,8 +60,9 @@ class ProfileViewModel(
         }
         
         viewModelScope.launch {
-            val connected = activityRepository.isConnected()
-            _uiState.update { it.copy(isConnectedToStrava = connected) }
+            activityRepository.connectionStatusFlow().collect { connected ->
+                _uiState.update { it.copy(isConnectedToStrava = connected) }
+            }
         }
     }
 

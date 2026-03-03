@@ -1,8 +1,6 @@
 package com.deivitdev.peakflow.domain.usecase
 
-import com.deivitdev.peakflow.domain.model.FitnessFatigueData
-import com.deivitdev.peakflow.domain.model.FitnessFatiguePoint
-import com.deivitdev.peakflow.domain.model.TrainingStatus
+import com.deivitdev.peakflow.domain.model.*
 import com.deivitdev.peakflow.domain.repository.ActivityRepository
 import kotlinx.datetime.*
 
@@ -28,9 +26,8 @@ class GetFitnessFatigueUseCase(private val repository: ActivityRepository) {
             val nextCtl = currentCtl + (tss - currentCtl) / 42f
             val nextAtl = currentAtl + (tss - currentAtl) / 7f
             
-            // TSB is CTL - ATL from the PREVIOUS day usually, 
-            // but for trends we can show current day balance
-            val form = currentCtl - currentAtl 
+            // Resulting Form: TSB after today's load
+            val form = nextCtl - nextAtl 
 
             if (date > startDate.plus(DatePeriod(days = 42))) {
                 points.add(
@@ -69,6 +66,21 @@ class GetFitnessFatigueUseCase(private val repository: ActivityRepository) {
             projPoints
         } else null
 
+        // Calculate Ramp Rate (Weekly CTL increase)
+        val rampRateData = if (points.size >= 7) {
+            val currentFitness = currentCtl
+            val fitness7DaysAgo = points[points.size - 7].fitness
+            val increase = currentFitness - fitness7DaysAgo
+            
+            val rampStatus = when {
+                increase < 2f -> RampRateStatus.MAINTENANCE
+                increase < 5f -> RampRateStatus.PRODUCTIVE
+                increase < 8f -> RampRateStatus.INTENSE
+                else -> RampRateStatus.RISKY
+            }
+            RampRateData(increase, rampStatus)
+        } else null
+
         val status = when {
             points.size < 21 -> TrainingStatus.BUILDING_DATA
             latestForm > 5f -> TrainingStatus.FRESH
@@ -84,7 +96,8 @@ class GetFitnessFatigueUseCase(private val repository: ActivityRepository) {
             currentFitness = currentCtl,
             currentFatigue = currentAtl,
             currentForm = latestForm,
-            projection = projection
+            projection = projection,
+            rampRate = rampRateData
         )
     }
 }

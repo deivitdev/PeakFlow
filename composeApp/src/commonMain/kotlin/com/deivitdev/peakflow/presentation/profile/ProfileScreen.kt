@@ -92,33 +92,53 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(12.dp))
         
         Row(Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = uiState.weight,
-                onValueChange = viewModel::onWeightChange,
-                label = { Text(stringResource(Res.string.weight_label).uppercase(), letterSpacing = 1.sp) },
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accentColor,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = labelAlpha)
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(Res.string.weight_label).uppercase(), 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = labelAlpha),
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    com.deivitdev.peakflow.presentation.components.MetricInfoTooltip(acronym = "WKG")
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedTextField(
+                    value = uiState.weight,
+                    onValueChange = viewModel::onWeightChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accentColor,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = labelAlpha)
+                    )
                 )
-            )
+            }
             Spacer(modifier = Modifier.width(12.dp))
-            OutlinedTextField(
-                value = uiState.height,
-                onValueChange = viewModel::onHeightChange,
-                label = { Text(stringResource(Res.string.height_label).uppercase(), letterSpacing = 1.sp) },
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accentColor,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = labelAlpha)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(Res.string.height_label).uppercase(), 
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = labelAlpha),
+                    letterSpacing = 1.sp
                 )
-            )
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedTextField(
+                    value = uiState.height,
+                    onValueChange = viewModel::onHeightChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accentColor,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = labelAlpha)
+                    )
+                )
+            }
         }
         
         Spacer(modifier = Modifier.height(12.dp))

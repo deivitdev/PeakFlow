@@ -89,6 +89,10 @@ private fun getMetricDescription(acronym: String): String? {
         cleanAcronym.contains("RELATIVE EFFORT") || cleanAcronym.contains("ESFUERZO RELATIVO") -> stringResource(Res.string.tss_desc)
         cleanAcronym == "80/20" || cleanAcronym.contains("POLARIZA") -> stringResource(Res.string.polarization_desc)
         cleanAcronym == "METABOLIC" || cleanAcronym.contains("FIRMA") || cleanAcronym == "INFO" -> stringResource(Res.string.metabolic_desc)
+        cleanAcronym.contains("RAMP") || cleanAcronym.contains("MEJORA") -> stringResource(Res.string.ramp_rate_desc)
+        cleanAcronym == "HRV" || cleanAcronym == "VFC" -> stringResource(Res.string.hrv_desc)
+        cleanAcronym == "SLEEP" || cleanAcronym == "SUEÑO" -> stringResource(Res.string.sleep_desc)
+        cleanAcronym.contains("RECOVERY") || cleanAcronym.contains("RECUPERA") -> stringResource(Res.string.recovery_guide_learn_more)
         else -> null
     }
 }

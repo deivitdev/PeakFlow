@@ -28,21 +28,15 @@ class GetAdvancedPerformanceInsightsUseCase(
         val last28DaysStart = now.minus(28, DateTimeUnit.DAY).toString()
         val today = now.toString()
 
-        val activities = activityRepository.getActivities()
-        
-        // Hydrate the last 5 activities to ensure we have some data for the charts
-        activities.take(5).forEach { summary ->
-            activityRepository.getActivity(summary.id)
-        }
-
-        // Re-fetch aggregated zones now that we've hydrated recent activities
         val zones7 = activityRepository.getAggregatedZones(last7DaysStart, today)
         val zones28 = activityRepository.getAggregatedZones(last28DaysStart, today)
 
         val polarization7 = calculatePolarization(zones7)
         val polarization28 = calculatePolarization(zones28)
 
+        val activities = activityRepository.getActivities()
         val lastActivity = activities.firstOrNull()?.let { activityRepository.getActivity(it.id) }
+
         
         val metabolicSummary = lastActivity?.let { calculateMetabolic(it) } 
             ?: MetabolicSummary(0f, 0f, 0)

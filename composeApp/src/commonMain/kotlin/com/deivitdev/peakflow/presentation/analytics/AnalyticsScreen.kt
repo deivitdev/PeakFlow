@@ -532,9 +532,10 @@ private fun InsightsContent(
         SectionTitle(stringResource(Res.string.coach_path_title))
         
         DailyPathSelector(
-            recommendation = recommendation,
+            recommendation = uiState.trainingRecommendation,
             selectedIndex = uiState.selectedPathIndex,
             onPathSelected = viewModel::onPathSelected,
+            onShowGuide = { /* handle show guide */ },
             modifier = Modifier.padding(vertical = 8.dp)
         )
         
@@ -545,7 +546,7 @@ private fun InsightsContent(
 
     uiState.fitnessFatigue?.let { ffData ->
         Spacer(modifier = Modifier.height(32.dp))
-        FitnessFatigueSection(ffData, onShowTsbGuide)
+        FitnessFatigueSection(ffData, onShowTsbGuide, { /* handle show ramp guide */ })
     }
 
     uiState.advancedInsights?.let { advInsights ->

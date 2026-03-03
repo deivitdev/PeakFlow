@@ -27,9 +27,34 @@ fun DailyPathSelector(
     recommendation: TrainingRecommendation,
     selectedIndex: Int,
     onPathSelected: (Int) -> Unit,
+    onShowGuide: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(Res.string.coach_path_title),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = stringResource(Res.string.coach_guide_learn_more),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                fontWeight = FontWeight.Bold,
+                textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                modifier = Modifier.clickable { onShowGuide() }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(horizontal = 0.dp),
@@ -60,6 +85,8 @@ fun PathOptionCard(
         TrainingPathType.RECOVER -> Color(0xFF66BB6A) // Green
     }
 
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
     val typeLabel = when (option.type) {
         TrainingPathType.BUILD -> stringResource(Res.string.path_build)
         TrainingPathType.MAINTAIN -> stringResource(Res.string.path_maintain)
@@ -83,7 +110,7 @@ fun PathOptionCard(
             containerColor = containerColor,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        border = BorderStroke(if (isSelected) 2.dp else 1.dp, borderColor),
+        border = BorderStroke(if (isSelected) { if (isDark) 1.dp else 2.dp } else 1.dp, borderColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -114,6 +141,30 @@ fun PathOptionCard(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
+
+            if (option.estimatedCyclingDuration != null || option.estimatedRunningDuration != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    option.estimatedCyclingDuration?.let {
+                        Text(
+                            text = stringResource(Res.string.estimate_cycling, it),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                    option.estimatedRunningDuration?.let {
+                        Text(
+                            text = stringResource(Res.string.estimate_running, it),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
             
             Spacer(modifier = Modifier.height(12.dp))
             

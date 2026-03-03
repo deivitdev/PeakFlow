@@ -38,15 +38,6 @@ fun CoachInsightCarousel(
     if (insights.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(Res.string.coach_insights_title),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            letterSpacing = 1.sp,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 8.dp)

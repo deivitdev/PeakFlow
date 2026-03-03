@@ -22,5 +22,6 @@ data class FitnessFatigueData(
     val currentFitness: Float,
     val currentFatigue: Float,
     val currentForm: Float,
-    val projection: List<FitnessFatiguePoint>? = null
+    val projection: List<FitnessFatiguePoint>? = null,
+    val rampRate: RampRateData? = null
 )

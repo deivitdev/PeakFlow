@@ -27,6 +27,7 @@ import com.deivitdev.peakflow.domain.model.FitnessFatiguePoint
 import com.deivitdev.peakflow.domain.model.TrainingStatus
 import com.deivitdev.peakflow.presentation.components.SectionTitle
 import com.deivitdev.peakflow.presentation.components.MetricInfoTooltip
+import com.deivitdev.peakflow.presentation.analytics.components.RampRateIndicator
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import org.jetbrains.compose.resources.stringResource
@@ -36,7 +37,8 @@ import kotlin.math.roundToInt
 @Composable
 fun FitnessFatigueSection(
     data: FitnessFatigueData,
-    onShowTsbGuide: () -> Unit
+    onShowTsbGuide: () -> Unit,
+    onShowRampRateGuide: () -> Unit
 ) {
     var selectedPoint by remember(data) { mutableStateOf<FitnessFatiguePoint?>(null) }
     val isSpanish = stringResource(Res.string.km) == "km" && stringResource(Res.string.total_distance) == "Distancia Total"
@@ -48,9 +50,7 @@ fun FitnessFatigueSection(
     val formColor = if (isDark) Color(0xFFFFEB3B) else Color(0xFFFFA000)
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        SectionTitle(stringResource(Res.string.fitness_fatigue_title))
-        
-        TrainingStatusCard(data, formColor, onShowTsbGuide)
+        TrainingStatusCard(data, formColor, onShowTsbGuide, onShowRampRateGuide)
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -167,7 +167,8 @@ private fun QuickMetric(label: String, value: Int, color: Color) {
 private fun TrainingStatusCard(
     data: FitnessFatigueData, 
     formColor: Color,
-    onShowTsbGuide: () -> Unit
+    onShowTsbGuide: () -> Unit,
+    onShowRampRateGuide: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
     val (statusLabel, color) = when (data.currentStatus) {
@@ -185,6 +186,7 @@ private fun TrainingStatusCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, color.copy(alpha = 0.5f))
     ) {
+        // Row 1: Status & TSB
         Row(
             modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -236,6 +238,43 @@ private fun TrainingStatusCard(
                     textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
                     modifier = Modifier.clickable { onShowTsbGuide() }
                 )
+            }
+        }
+
+        // Row 2: Ramp Rate
+        data.rampRate?.let { ramp ->
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = color.copy(alpha = 0.1f)
+            )
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(Res.string.ramp_rate_label),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        MetricInfoTooltip(acronym = "RAMP")
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(Res.string.ramp_rate_learn_more),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                        modifier = Modifier.clickable { onShowRampRateGuide() }
+                    )
+                }
+                RampRateIndicator(ramp)
             }
         }
     }

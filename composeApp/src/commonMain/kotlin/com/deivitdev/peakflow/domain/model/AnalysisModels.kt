@@ -37,6 +37,15 @@ enum class InsightType {
     HYDRATION, GREY_ZONE, FUELING, BALANCE_ALERT
 }
 
+enum class RampRateStatus {
+    MAINTENANCE, PRODUCTIVE, INTENSE, RISKY
+}
+
+data class RampRateData(
+    val weeklyIncrease: Float,
+    val status: RampRateStatus
+)
+
 data class CoachInsight(
     val type: InsightType,
     val title: String,
@@ -51,7 +60,9 @@ data class PathOption(
     val predictedTsb: Int,
     val recommendedSport: WorkoutType? = null,
     val estimatedCarbGrams: Float = 0f,
-    val fuelingStrategy: FuelingStrategy = FuelingStrategy.MAINTENANCE
+    val fuelingStrategy: FuelingStrategy = FuelingStrategy.MAINTENANCE,
+    val estimatedCyclingDuration: String? = null,
+    val estimatedRunningDuration: String? = null
 )
 
 data class TrainingRecommendation(

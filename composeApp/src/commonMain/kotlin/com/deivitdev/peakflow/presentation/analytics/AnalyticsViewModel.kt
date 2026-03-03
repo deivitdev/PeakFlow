@@ -8,6 +8,7 @@ import com.deivitdev.peakflow.domain.model.TrainingRecommendation
 import com.deivitdev.peakflow.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 data class AnalyticsUiState(
     val metrics: PerformanceMetrics? = null,
@@ -26,6 +27,7 @@ data class AnalyticsUiState(
     val selectedMetric: TrendMetric = TrendMetric.DISTANCE
 )
 
+@OptIn(kotlinx.coroutines.FlowPreview::class)
 class AnalyticsViewModel(
     private val getPerformanceMetricsUseCase: GetPerformanceMetricsUseCase,
     private val getTrendsUseCase: GetTrendsUseCase,
@@ -36,11 +38,15 @@ class AnalyticsViewModel(
     private val getAdvancedPerformanceInsightsUseCase: GetAdvancedPerformanceInsightsUseCase,
     private val getPredictiveCoachingUseCase: GetPredictiveCoachingUseCase,
     private val observeActivitiesUseCase: ObserveActivitiesUseCase,
-    private val syncActivitiesUseCase: SyncActivitiesUseCase
+    private val syncActivitiesUseCase: SyncActivitiesUseCase,
+    private val hydrateRecentActivitiesUseCase: HydrateRecentActivitiesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AnalyticsUiState())
     val uiState = _uiState.asStateFlow()
+    
+    private var loadDataJob: Job? = null
+    private var isCurrentlyLoading = false
 
     init {
         // Observe profile changes reactively
@@ -61,50 +67,68 @@ class AnalyticsViewModel(
 
         // Reactive Observation: Reload data whenever activities change
         viewModelScope.launch {
-            observeActivitiesUseCase().collect {
-                loadData(showLoading = false)
-            }
+            observeActivitiesUseCase()
+                .debounce(2000)
+                .collect {
+                    loadData(showLoading = false)
+                }
         }
     }
 
     fun loadData(showLoading: Boolean = true) {
-        viewModelScope.launch {
-            if (showLoading) {
-                _uiState.update { it.copy(isLoading = true) }
-            }
-            
-            // 1. Sync daily loads first
-            syncDailyLoadUseCase()
-            
-            // 2. Fetch components with current granularity filter
-            val dateRange = when (_uiState.value.selectedGranularity) {
-                TrendGranularity.WEEKLY -> 7
-                TrendGranularity.MONTHLY -> 30
-            }
-            
-            val metrics = getPerformanceMetricsUseCase(dateRange)
-            val trends = getTrendsUseCase(
-                metric = _uiState.value.selectedMetric,
-                granularity = _uiState.value.selectedGranularity
-            )
-            
-            val initialFfData = getFitnessFatigueUseCase()
-            val recommendations = initialFfData?.let { getPredictiveCoachingUseCase(it) }
-            
-            // Get projection for the default selected path (index 1: Maintain)
-            val selectedPath = recommendations?.options?.getOrNull(_uiState.value.selectedPathIndex)
-            val ffDataWithProj = getFitnessFatigueUseCase(futureTss = selectedPath?.tssTarget)
-            
-            val advancedInsights = getAdvancedPerformanceInsightsUseCase()
+        if (isCurrentlyLoading) return
+        
+        loadDataJob?.cancel()
+        loadDataJob = viewModelScope.launch {
+            isCurrentlyLoading = true
+            try {
+                if (showLoading) {
+                    _uiState.update { it.copy(isLoading = true) }
+                    // Hydrate details once at the start of a full load
+                    hydrateRecentActivitiesUseCase()
+                }
+                
+                // 1. Sync daily loads first
+                syncDailyLoadUseCase()
+                
+                // 2. Fetch components with current granularity filter
+                val dateRange = when (_uiState.value.selectedGranularity) {
+                    TrendGranularity.WEEKLY -> 7
+                    TrendGranularity.MONTHLY -> 30
+                }
+                
+                val metrics = getPerformanceMetricsUseCase(dateRange)
+                val trends = getTrendsUseCase(
+                    metric = _uiState.value.selectedMetric,
+                    granularity = _uiState.value.selectedGranularity
+                )
+                
+                val initialFfData = getFitnessFatigueUseCase()
+                val recommendations = initialFfData?.let { getPredictiveCoachingUseCase(it) }
+                
+                // Get projection for the default selected path (index 1: Maintain)
+                val selectedPath = recommendations?.options?.getOrNull(_uiState.value.selectedPathIndex)
+                val ffDataWithProj = getFitnessFatigueUseCase(futureTss = selectedPath?.tssTarget)
+                
+                val advancedInsights = getAdvancedPerformanceInsightsUseCase()
 
-            _uiState.update { it.copy(
-                metrics = metrics, 
-                trends = trends, 
-                fitnessFatigue = ffDataWithProj,
-                advancedInsights = advancedInsights,
-                trainingRecommendation = recommendations,
-                isLoading = false 
-            ) }
+                _uiState.update { it.copy(
+                    metrics = metrics, 
+                    trends = trends, 
+                    fitnessFatigue = ffDataWithProj,
+                    advancedInsights = advancedInsights,
+                    trainingRecommendation = recommendations,
+                    isLoading = false 
+                ) }
+            } catch (e: com.deivitdev.peakflow.data.remote.StravaRateLimitException) {
+                println("RATE_LIMIT_ERROR: ${e.message}")
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                println("LOAD_DATA_ERROR: ${e.message}")
+                _uiState.update { it.copy(isLoading = false) }
+            } finally {
+                isCurrentlyLoading = false
+            }
         }
     }
 
@@ -112,7 +136,7 @@ class AnalyticsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
             syncActivitiesUseCase().onSuccess {
-                loadData(showLoading = false)
+                loadData(showLoading = true) // Full load after sync
             }.onFailure {
                 // Handle error if needed
             }

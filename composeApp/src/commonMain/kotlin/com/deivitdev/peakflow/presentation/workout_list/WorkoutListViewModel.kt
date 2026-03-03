@@ -31,10 +31,17 @@ class WorkoutListViewModel(
     private var allActivities: List<Activity> = emptyList()
 
     init {
-        loadActivities()
+        viewModelScope.launch {
+            repository.getActivitiesFlow().collect { activities ->
+                allActivities = activities
+                applyFilters()
+            }
+        }
     }
 
     fun loadActivities() {
+        // This is now handled reactively by the flow in init
+        // But we keep it for manual triggers if needed, though it's redundant now
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             allActivities = repository.getActivities()
