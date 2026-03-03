@@ -68,6 +68,9 @@ WHERE startDate >= ? AND startDate <= ?;
 selectAllActivities:
 SELECT * FROM Activity ORDER BY startDate DESC;
 
+getLatestActivityDate:
+SELECT startDate FROM Activity ORDER BY startDate DESC LIMIT 1;
+
 getActivityById:
 SELECT * FROM Activity WHERE id = ?;
 

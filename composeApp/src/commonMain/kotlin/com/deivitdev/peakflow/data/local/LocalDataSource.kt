@@ -2,6 +2,7 @@ package com.deivitdev.peakflow.data.local
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.deivitdev.peakflow.db.Activity
 import com.deivitdev.peakflow.db.PeakFlowDatabase
 import com.deivitdev.peakflow.db.Token
@@ -61,6 +62,10 @@ class LocalDataSource(private val database: PeakFlowDatabase) {
         queries.selectAllActivities().executeAsList()
     }
 
+    suspend fun getLatestActivityDate(): String? = withContext(Dispatchers.IO) {
+        queries.getLatestActivityDate().executeAsOneOrNull()
+    }
+
     fun getAllActivitiesFlow(): Flow<List<Activity>> {
         return queries.selectAllActivities().asFlow().mapToList(Dispatchers.IO)
     }
@@ -80,6 +85,10 @@ class LocalDataSource(private val database: PeakFlowDatabase) {
 
     suspend fun getToken(id: String): Token? = withContext(Dispatchers.IO) {
         queries.getToken(id).executeAsOneOrNull()
+    }
+
+    fun getTokenFlow(id: String): Flow<Token?> {
+        return queries.getToken(id).asFlow().mapToOneOrNull(Dispatchers.IO)
     }
 
     suspend fun deleteToken(id: String) = withContext(Dispatchers.IO) {
