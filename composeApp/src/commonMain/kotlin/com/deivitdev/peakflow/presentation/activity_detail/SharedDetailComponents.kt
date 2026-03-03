@@ -210,23 +210,25 @@ fun ActivityHeader(activity: Activity, userName: String?, userPhotoUrl: String?,
                 lineHeight = 28.sp
             )
             
-            deviceName?.let {
-                Text(
-                    text = it.uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-            
-            activity.location?.let {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    DetailIcon(Icons.Default.Place, contentDescription = null, size = 14.dp, tint = accentColor)
-                    Spacer(Modifier.width(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                deviceName?.let {
+                    Text(
+                        text = it.uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+                
+                if (deviceName != null && activity.location != null) {
+                    Text(
+                        text = " • ",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+
+                activity.location?.let {
                     Text(
                         text = it.uppercase(),
                         style = MaterialTheme.typography.labelSmall,

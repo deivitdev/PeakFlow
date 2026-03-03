@@ -14,12 +14,17 @@ import com.deivitdev.peakflow.data.remote.model.StravaBestEffortDto
 import com.deivitdev.peakflow.domain.model.ActivityBestEffort
 
 fun StravaActivityDto.toDb(): ActivityDb {
-    val loc = when {
-        locationCity != null && locationCountry != null -> "$locationCity, $locationCountry"
-        locationCity != null -> locationCity
-        locationCountry != null -> locationCountry
-        else -> null
-    }
+    val loc = buildString {
+        if (locationCity != null) append(locationCity)
+        if (locationState != null) {
+            if (isNotEmpty()) append(", ")
+            append(locationState)
+        }
+        if (locationCountry != null) {
+            if (isNotEmpty()) append(", ")
+            append(locationCountry)
+        }
+    }.takeIf { it.isNotEmpty() }
     
     val splitsStr = splitsMetric?.let { Json.encodeToString(it) }
     val bestEffortsStr = bestEfforts?.let { Json.encodeToString(it) }

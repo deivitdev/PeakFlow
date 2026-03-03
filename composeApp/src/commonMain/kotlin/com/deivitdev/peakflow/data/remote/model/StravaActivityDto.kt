@@ -31,6 +31,7 @@ data class StravaActivityDto(
     @SerialName("elev_low") val elevLow: Float? = null,
     @SerialName("device_name") val deviceName: String? = null,
     @SerialName("location_city") val locationCity: String? = null,
+    @SerialName("location_state") val locationState: String? = null,
     @SerialName("location_country") val locationCountry: String? = null,
     val gear: StravaGearDto? = null,
     @SerialName("splits_metric") val splitsMetric: List<StravaSplitDto>? = null,

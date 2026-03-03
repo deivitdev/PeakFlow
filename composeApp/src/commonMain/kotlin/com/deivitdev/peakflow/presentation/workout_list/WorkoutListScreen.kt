@@ -177,11 +177,22 @@ fun WorkoutItem(activity: Activity, onClick: () -> Unit) {
                     letterSpacing = 1.sp
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = formatDate(activity.startDateLocal),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = formatDate(activity.startDateLocal),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                    activity.location?.let {
+                        Text(
+                            text = it.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = accentColor.copy(alpha = 0.6f)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

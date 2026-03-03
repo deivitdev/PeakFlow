@@ -115,20 +115,23 @@ class ActivityRepositoryImpl(
     override suspend fun getActivity(id: String): Activity? {
         val dbActivity = localDataSource.getActivityById(id) ?: return null
         
-        // If we are missing the new advanced data (splits or power for cycling), fetch it again
+        // If we are missing the new advanced data (splits, power, or location), fetch it again
         val isMissingAdvancedData = dbActivity.splitsJson == null || 
+                dbActivity.location == null ||
                 (dbActivity.type.lowercase().contains("ride") && dbActivity.weightedAverageWatts == null)
         
         val streams = dbActivity.streams?.let { Json.decodeFromString<ActivityStreams>(it) }
         val isMissingNewStreams = dbActivity.streams != null && (streams?.velocitySmooth == null || (dbActivity.type.lowercase().contains("ride") && streams?.watts == null))
 
         if (dbActivity.streams == null || isMissingAdvancedData || isMissingNewStreams) {
-            println("FETCHING_REAL_DATA: Activity $id needs update. Fetching from Strava...")
+            println("FETCHING_REAL_DATA: Activity $id needs update (missing streams, splits or location). Fetching from Strava...")
             val token = getValidToken() ?: return dbActivity.toDomain()
             
             try {
                 // Fetch full detail and streams
                 val detailDto = apiClient.getActivityDetail(token.accessToken, id)
+                println("STRAVA_API: Detailed activity received. City: ${detailDto.locationCity}, Country: ${detailDto.locationCountry}")
+                
                 val streamsMap = apiClient.getStreams(token.accessToken, id)
                 
                 println("STRAVA_API: Received streams keys: ${streamsMap.keys} for activity $id")
