@@ -160,6 +160,28 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
+            value = uiState.hrMax,
+            onValueChange = viewModel::onHrMaxChange,
+            label = { 
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("MAX HEART RATE (BPM)".uppercase(), letterSpacing = 1.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    com.deivitdev.peakflow.presentation.components.MetricInfoTooltip(acronym = "HRMAX")
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = accentColor,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = labelAlpha)
+            )
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
             value = uiState.weeklyGoalHours,
             onValueChange = viewModel::onWeeklyGoalChange,
             label = { Text(stringResource(Res.string.weekly_goal_label).uppercase(), letterSpacing = 1.sp) },

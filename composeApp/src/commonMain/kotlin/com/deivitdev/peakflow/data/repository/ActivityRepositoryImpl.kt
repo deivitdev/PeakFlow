@@ -143,7 +143,11 @@ class ActivityRepositoryImpl(
                     println("STRAVA_API_WARNING: No heartrate or altitude streams found in response keys.")
                 }
 
-                val zones = calculateHrZones(hrData ?: emptyList(), 190) // Default for now
+                // Fetch user profile to get custom HR Max
+                val profile = localDataSource.database.peakFlowDatabaseQueries.getUserProfile().executeAsOneOrNull()
+                val hrMax = profile?.hrMax?.toInt()?.takeIf { it > 0 } ?: 190
+
+                val zones = calculateHrZones(hrData ?: emptyList(), hrMax)
                 val streamsBlob = Json.encodeToString(
                     ActivityStreams(
                         heartRate = hrData, 

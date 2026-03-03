@@ -93,6 +93,7 @@ private fun getMetricDescription(acronym: String): String? {
         cleanAcronym == "HRV" || cleanAcronym == "VFC" -> stringResource(Res.string.hrv_desc)
         cleanAcronym == "SLEEP" || cleanAcronym == "SUEÑO" -> stringResource(Res.string.sleep_desc)
         cleanAcronym.contains("RECOVERY") || cleanAcronym.contains("RECUPERA") -> stringResource(Res.string.recovery_guide_learn_more)
+        cleanAcronym == "HRMAX" || cleanAcronym.contains("PULSO") -> stringResource(Res.string.hrmax_desc)
         else -> null
     }
 }

@@ -46,7 +46,8 @@ class ActivityDetailViewModel(
             val userProfile = getUserProfileUseCase().firstOrNull() // Get latest user profile
 
             if (activity != null) {
-                val zones = calculateHrZones(activity.heartRateSeries, activity.movingTimeSeconds)
+                val hrMax = userProfile?.hrMaxBpm ?: 190
+                val zones = calculateHrZones(activity.heartRateSeries, activity.movingTimeSeconds, hrMax)
                 val performanceMetrics = calculatePerformanceMetricsUseCase(activity, userProfile)
 
                 _uiState.value = _uiState.value.copy(
@@ -73,10 +74,10 @@ class ActivityDetailViewModel(
         _uiState.value = ActivityDetailUiState()
     }
 
-    private fun calculateHrZones(heartRateSeries: List<Int>?, totalMovingTimeSeconds: Int): List<HeartRateZone> {
+    private fun calculateHrZones(heartRateSeries: List<Int>?, totalMovingTimeSeconds: Int, hrMax: Int): List<HeartRateZone> {
         if (heartRateSeries == null || heartRateSeries.isEmpty()) return emptyList()
 
-        val maxHr = 190f // Default max HR
+        val maxHr = hrMax.toFloat()
         val zones = MutableList(5) { 0 }
 
         heartRateSeries.forEach { bpm ->

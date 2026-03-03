@@ -11,7 +11,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class LocalDataSource(private val database: PeakFlowDatabase) {
+class LocalDataSource(val database: PeakFlowDatabase) {
     private val queries = database.peakFlowDatabaseQueries
 
     suspend fun insertActivity(activity: Activity) = withContext(Dispatchers.IO) {

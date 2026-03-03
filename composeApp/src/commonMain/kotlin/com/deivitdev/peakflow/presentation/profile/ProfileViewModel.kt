@@ -18,6 +18,7 @@ data class ProfileUiState(
     val language: String? = null,
     val profilePhotoUrl: String? = null,
     val ftpWatts: String = "",
+    val hrMax: String = "",
     val weeklyGoalHours: String = "5",
     val isConnectedToStrava: Boolean = false,
     val isLoading: Boolean = false,
@@ -51,6 +52,7 @@ class ProfileViewModel(
                             language = it.language,
                             profilePhotoUrl = it.profilePhotoUrl,
                             ftpWatts = it.ftpWatts?.toString() ?: "",
+                            hrMax = it.hrMaxBpm?.toString() ?: "",
                             weeklyGoalHours = it.weeklyGoalHours.toString(),
                             relativePower = relPower
                         )
@@ -70,6 +72,7 @@ class ProfileViewModel(
     fun onWeightChange(newWeight: String) = _uiState.update { it.copy(weight = newWeight) }
     fun onHeightChange(newHeight: String) = _uiState.update { it.copy(height = newHeight) }
     fun onFtpWattsChange(newFtpWatts: String) = _uiState.update { it.copy(ftpWatts = newFtpWatts) }
+    fun onHrMaxChange(newHrMax: String) = _uiState.update { it.copy(hrMax = newHrMax) }
     fun onWeeklyGoalChange(newGoal: String) = _uiState.update { it.copy(weeklyGoalHours = newGoal) }
     
     fun onLanguageChange(lang: String?) {
@@ -95,6 +98,7 @@ class ProfileViewModel(
                     language = state.language,
                     profilePhotoUrl = state.profilePhotoUrl,
                     ftpWatts = state.ftpWatts.toIntOrNull(),
+                    hrMaxBpm = state.hrMax.toIntOrNull(),
                     weeklyGoalHours = state.weeklyGoalHours.toFloatOrNull() ?: 5f
                 )
             )
