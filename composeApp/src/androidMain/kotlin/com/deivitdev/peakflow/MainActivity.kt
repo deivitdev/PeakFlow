@@ -4,27 +4,20 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-
+import androidx.compose.runtime.*
 import android.content.Intent
-import androidx.compose.runtime.mutableStateOf
-import com.deivitdev.peakflow.di.DriverFactory
 import com.deivitdev.peakflow.db.PeakFlowDatabase
-import com.deivitdev.peakflow.db.UserProfile
+import org.koin.android.ext.android.get
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
     private val stravaAuthCode = mutableStateOf<String?>(null)
     
-    private lateinit var database: PeakFlowDatabase
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
-        val driver = DriverFactory(applicationContext).createDriver()
-        database = PeakFlowDatabase(driver)
+        val database: PeakFlowDatabase = get()
 
         // Load profile synchronously to prevent UI flickering on recreation
         val initialProfile = runBlocking {
@@ -44,12 +37,8 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             App(
-                database = database,
-                initialProfile = initialProfile,
                 stravaAuthCode = stravaAuthCode.value,
-                onAuthCodeHandled = { stravaAuthCode.value = null },
-                stravaClientId = BuildConfig.STRAVA_CLIENT_ID,
-                stravaClientSecret = BuildConfig.STRAVA_CLIENT_SECRET
+                onAuthCodeHandled = { stravaAuthCode.value = null }
             )
         }
     }

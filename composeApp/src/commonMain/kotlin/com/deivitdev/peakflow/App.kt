@@ -18,40 +18,30 @@ import peakflow.composeapp.generated.resources.*
 import com.deivitdev.peakflow.data.remote.StravaApiClient
 import com.deivitdev.peakflow.presentation.workout_list.WorkoutListScreen
 import com.deivitdev.peakflow.presentation.workout_list.WorkoutListViewModel
-import com.deivitdev.peakflow.domain.usecase.SyncActivitiesUseCase
 import com.deivitdev.peakflow.domain.repository.ActivityRepository
-import com.deivitdev.peakflow.data.repository.ActivityRepositoryImpl
-import com.deivitdev.peakflow.data.local.LocalDataSource
-import com.deivitdev.peakflow.db.PeakFlowDatabase
 import com.deivitdev.peakflow.presentation.profile.ProfileScreen
 import com.deivitdev.peakflow.presentation.profile.ProfileViewModel
-import com.deivitdev.peakflow.domain.usecase.GetUserProfileUseCase
-import com.deivitdev.peakflow.domain.usecase.SaveUserProfileUseCase
-import com.deivitdev.peakflow.data.repository.UserRepositoryImpl
-import com.deivitdev.peakflow.domain.usecase.GetPerformanceMetricsUseCase
+import com.deivitdev.peakflow.domain.usecase.*
+import com.deivitdev.peakflow.domain.model.StravaConfig
+import com.deivitdev.peakflow.domain.repository.UserRepository
 import com.deivitdev.peakflow.presentation.analytics.AnalyticsScreen
 import com.deivitdev.peakflow.presentation.analytics.AnalyticsViewModel
 import com.deivitdev.peakflow.presentation.navigation.Screen
-import com.deivitdev.peakflow.domain.usecase.GetActivityDetailUseCase
-import com.deivitdev.peakflow.domain.usecase.CalculatePerformanceMetricsUseCase
-import com.deivitdev.peakflow.domain.usecase.GetTrendsUseCase
-import com.deivitdev.peakflow.domain.usecase.GetFitnessFatigueUseCase
-import com.deivitdev.peakflow.domain.usecase.SyncDailyLoadUseCase
-import com.deivitdev.peakflow.domain.usecase.CalculateRelativePowerUseCase
 import com.deivitdev.peakflow.presentation.activity_detail.ActivityDetailScreen
 import com.deivitdev.peakflow.presentation.activity_detail.ActivityDetailViewModel
 import com.deivitdev.peakflow.presentation.auth.ConnectStravaScreen
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 @Composable
 fun App(
-    database: PeakFlowDatabase,
     initialProfile: com.deivitdev.peakflow.db.UserProfile? = null,
     stravaAuthCode: String? = null,
-    onAuthCodeHandled: () -> Unit = {},
-    stravaClientId: String = "",
-    stravaClientSecret: String = ""
+    onAuthCodeHandled: () -> Unit = {}
 ) {
-    val userRepository = remember(database) { UserRepositoryImpl(database) }
+    val userRepository: UserRepository = koinInject()
     val userProfileFlow = remember(userRepository) { userRepository.getUserProfile() }
     val userProfile by userProfileFlow.collectAsState(initial = null)
 
@@ -87,76 +77,31 @@ fun App(
             var selectedActivityType by remember { mutableStateOf<com.deivitdev.peakflow.domain.model.WorkoutType?>(null) }
             
             var isConnected by remember { mutableStateOf(false) }
+            var isConnecting by remember { mutableStateOf(false) }
+            val snackbarHostState = remember { SnackbarHostState() }
+            val coroutineScope = rememberCoroutineScope()
 
-            // DI Setup
-            val apiClient = remember { StravaApiClient(StravaApiClient.createDefaultHttpClient()) }
-            val localDataSource = remember(database) { LocalDataSource(database) }
-            val repository =
-                remember(apiClient, localDataSource, stravaClientId, stravaClientSecret) {
-                    ActivityRepositoryImpl(
-                        apiClient = apiClient,
-                        localDataSource = localDataSource,
-                        clientId = stravaClientId,
-                        clientSecret = stravaClientSecret
-                    )
-                }
+            // DI provided by Koin
+            val apiClient: StravaApiClient = koinInject()
+            val repository: ActivityRepository = koinInject()
+            val stravaConfig: StravaConfig = koinInject()
             
-            // Check connection status reactively
-            LaunchedEffect(stravaAuthCode) {
-                isConnected = repository.isConnected()
-            }
+            val workoutListViewModel: WorkoutListViewModel = koinViewModel()
+            val profileViewModel: ProfileViewModel = koinViewModel()
+            val analyticsViewModel: AnalyticsViewModel = koinViewModel()
+            val activityDetailViewModel: ActivityDetailViewModel = koinViewModel()
 
-            val getUserProfileUseCase =
-                remember(userRepository) { GetUserProfileUseCase(userRepository) }
-            val saveUserProfileUseCase =
-                remember(userRepository) { SaveUserProfileUseCase(userRepository) }
-            val getPerformanceMetricsUseCase =
-                remember(repository, userRepository) { GetPerformanceMetricsUseCase(repository, userRepository) }
-            val getActivityDetailUseCase = 
-                remember(repository) { GetActivityDetailUseCase(repository) }
-            val calculatePerformanceMetricsUseCase =
-                remember { CalculatePerformanceMetricsUseCase() }
-            val calculateRelativePowerUseCase =
-                remember { CalculateRelativePowerUseCase() }
-            val getTrendsUseCase =
-                remember(repository) { GetTrendsUseCase(repository) }
-            val syncDailyLoadUseCase = 
-                remember(repository, userRepository, calculatePerformanceMetricsUseCase) { 
-                    SyncDailyLoadUseCase(repository, userRepository, calculatePerformanceMetricsUseCase) 
+            // Reactive connection status
+            LaunchedEffect(repository) {
+                repository.connectionStatusFlow().collect {
+                    isConnected = it
                 }
-            val getFitnessFatigueUseCase =
-                remember(repository) { GetFitnessFatigueUseCase(repository) }
-            val calculateMetabolicUseCase = remember { com.deivitdev.peakflow.domain.usecase.CalculateMetabolicOxidationUseCase() }
-            val calculatePolarizationUseCase = remember { com.deivitdev.peakflow.domain.usecase.CalculatePolarizationRatioUseCase() }
-            val getAdvancedPerformanceInsightsUseCase = remember(repository, userRepository, calculateMetabolicUseCase, calculatePolarizationUseCase) {
-                com.deivitdev.peakflow.domain.usecase.GetAdvancedPerformanceInsightsUseCase(repository, userRepository, calculateMetabolicUseCase, calculatePolarizationUseCase)
-            }
-            val predictTrainingLoadUseCase = remember { com.deivitdev.peakflow.domain.usecase.PredictTrainingLoadUseCase() }
-            val auditSportBalanceUseCase = remember { com.deivitdev.peakflow.domain.usecase.AuditSportBalanceUseCase() }
-            val getPredictiveCoachingUseCase = remember(repository, predictTrainingLoadUseCase, auditSportBalanceUseCase) {
-                com.deivitdev.peakflow.domain.usecase.GetPredictiveCoachingUseCase(repository, predictTrainingLoadUseCase, auditSportBalanceUseCase)
-            }
-            val syncActivitiesUseCase = remember(repository) { SyncActivitiesUseCase(repository) }
-            val observeActivitiesUseCase = remember(repository) { com.deivitdev.peakflow.domain.usecase.ObserveActivitiesUseCase(repository) }
-            val workoutListViewModel = remember(repository, syncActivitiesUseCase) {
-                WorkoutListViewModel(repository, syncActivitiesUseCase)
             }
 
-            val profileViewModel =
-                remember(getUserProfileUseCase, saveUserProfileUseCase, repository, calculateRelativePowerUseCase) {
-                    ProfileViewModel(getUserProfileUseCase, saveUserProfileUseCase, repository, calculateRelativePowerUseCase)
-                }
-            val analyticsViewModel = remember(getPerformanceMetricsUseCase, getTrendsUseCase, getFitnessFatigueUseCase, syncDailyLoadUseCase, getUserProfileUseCase, calculateRelativePowerUseCase, getAdvancedPerformanceInsightsUseCase, getPredictiveCoachingUseCase, observeActivitiesUseCase, syncActivitiesUseCase) {
-                AnalyticsViewModel(getPerformanceMetricsUseCase, getTrendsUseCase, getFitnessFatigueUseCase, syncDailyLoadUseCase, getUserProfileUseCase, calculateRelativePowerUseCase, getAdvancedPerformanceInsightsUseCase, getPredictiveCoachingUseCase, observeActivitiesUseCase, syncActivitiesUseCase)
-            }
-            val activityDetailViewModel = remember(getActivityDetailUseCase, calculatePerformanceMetricsUseCase, getUserProfileUseCase) {
-                ActivityDetailViewModel(getActivityDetailUseCase, calculatePerformanceMetricsUseCase, getUserProfileUseCase)
-            }
-
-            val authUrl = remember(stravaClientId) {
+            val authUrl = remember(stravaConfig.clientId) {
                 apiClient.getAuthorizationUrl(
-                    clientId = stravaClientId,
-                    redirectUri = "peakflow://strava-auth"
+                    clientId = stravaConfig.clientId,
+                    redirectUri = stravaConfig.redirectUri
                 )
             }
             
@@ -178,20 +123,40 @@ fun App(
                 currentScreen = previousScreen
             }
 
-            // Connect logic
+            // Consolidated Connect logic
             LaunchedEffect(stravaAuthCode) {
-                if (stravaAuthCode != null) {
-                    repository.connect(stravaAuthCode)
-                    isConnected = repository.isConnected()
-                    if (isConnected) {
-                        profileViewModel.syncStravaProfile()
-                        repository.syncActivities()
-                        analyticsViewModel.loadData()
-                        workoutListViewModel.loadActivities()
+                val code = stravaAuthCode
+                if (code != null) {
+                    isConnecting = true
+                    println("STRAVA_AUTH: Attempting to connect with code...")
+                    val connectResult = repository.connect(code)
+                    
+                    if (connectResult.isSuccess) {
+                        println("STRAVA_AUTH: Connection successful, starting sync.")
                         currentScreen = Screen.Performance
                         previousScreen = Screen.Performance
+                        
+                        // Sync profile and start initial sync in background
+                        coroutineScope.launch {
+                            profileViewModel.syncStravaProfile()
+                            val syncResult = repository.syncActivities()
+                            if (syncResult.isFailure) {
+                                val error = syncResult.exceptionOrNull()
+                                val message = if (error is com.deivitdev.peakflow.data.remote.StravaRateLimitException) {
+                                    error.message
+                                } else {
+                                    "Initial sync failed: ${error?.message}"
+                                }
+                                snackbarHostState.showSnackbar(message ?: "Unknown sync error")
+                            }
+                        }
+                    } else {
+                        val errorMsg = connectResult.exceptionOrNull()?.message ?: "Unknown error"
+                        println("STRAVA_AUTH: Connection failed: $errorMsg")
+                        snackbarHostState.showSnackbar("Connection failed: $errorMsg")
                     }
-                    onAuthCodeHandled()
+                    isConnecting = false
+                    onAuthCodeHandled() // Move to the end to avoid cancelling this LaunchedEffect
                 }
             }
 
@@ -200,6 +165,7 @@ fun App(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
                 containerColor = MaterialTheme.colorScheme.background,
+                snackbarHost = { SnackbarHost(snackbarHostState) },
                 bottomBar = {
                     if (isConnected && currentScreen != Screen.ActivityDetail) {
                         NavigationBar(
@@ -254,7 +220,20 @@ fun App(
                         }
                     )) {
                     if (!isConnected) {
-                        ConnectStravaScreen(onConnectClick = { uriHandler.openUri(authUrl) })
+                        Box(Modifier.fillMaxSize()) {
+                            ConnectStravaScreen(onConnectClick = { uriHandler.openUri(authUrl) })
+                            
+                            if (isConnecting) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.5f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
                     } else {
                         when (currentScreen) {
                             Screen.Workouts -> {

@@ -28,7 +28,9 @@ kotlin {
             implementation(libs.androidx.appcompat)
             implementation(libs.sqldelight.android.driver)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.koin.android)
         }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -41,6 +43,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.compose.material.icons)
             implementation(libs.compose.material.icons.core)
+
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
 
@@ -51,6 +54,7 @@ kotlin {
             // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.auth)
 
@@ -58,10 +62,16 @@ kotlin {
             implementation(libs.kmpmaps.core)
             implementation(libs.kmpmaps.google)
 
-            // Image Loading
+            // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
+
+            // Koin
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -120,4 +130,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-
