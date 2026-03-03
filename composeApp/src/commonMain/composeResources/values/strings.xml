@@ -151,6 +151,8 @@
     <string name="wkg_desc">Watts per Kilogram: Power output relative to body weight.</string>
     <string name="np_desc">Normalized Power: An estimate of the power you could have maintained if your effort was perfectly constant.</string>
     <string name="hr_desc">Heart Rate: Number of heart beats per minute.</string>
+    <string name="hrmax_label">MAX HR</string>
+    <string name="hrmax_desc">Maximum Heart Rate: The highest number of beats per minute your heart can reach during maximum exertion. It is used to define your personalized training zones (Z1-Z5).</string>
     <string name="kj_desc">Kilojoules: Total mechanical work performed during the session.</string>
     <string name="performance_level">PERFORMANCE LEVEL</string>
     <string name="cat_recreational">RECREATIONAL</string>
@@ -253,7 +255,7 @@
     <string name="ramp_status_productive">PRODUCTIVE</string>
     <string name="ramp_status_intense">INTENSE</string>
     <string name="ramp_status_risky">HIGH RISK</string>
-    <string name="ramp_pts_per_week">+%1$s pts/week</string>
+    <string name="ramp_pts_per_week">%1$s pts/week</string>
     <string name="ramp_rate_guide_title">GUIDE TO IMPROVEMENT SPEED (RAMP RATE)</string>
     <string name="ramp_rate_learn_more">What is my progression speed?</string>
     <string name="ramp_level_maintenance">MAINTENANCE: You are keeping your fitness steady. Good for recovery phases.</string>

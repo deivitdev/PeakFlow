@@ -1,11 +1,14 @@
 package com.deivitdev.peakflow.presentation.utils
 
 fun formatDecimal(value: Float): String {
+    val isNegative = value < 0
+    val absValue = if (isNegative) -value else value
     val multiplier = 100
-    val rounded = (value * multiplier).toInt()
+    val rounded = (absValue * multiplier).toInt()
     val integerPart = rounded / multiplier
     val fractionalPart = rounded % multiplier
-    return "$integerPart.${fractionalPart.toString().padStart(2, '0')}"
+    val sign = if (isNegative) "-" else ""
+    return "$sign$integerPart.${fractionalPart.toString().padStart(2, '0')}"
 }
 
 fun formatSeconds(seconds: Int): String {

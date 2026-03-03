@@ -34,8 +34,10 @@ fun RampRateIndicator(
 
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            val formattedValue = formatDecimal(data.weeklyIncrease)
+            val displayText = if (data.weeklyIncrease > 0) "+$formattedValue" else formattedValue
             Text(
-                text = stringResource(Res.string.ramp_pts_per_week, formatDecimal(data.weeklyIncrease)),
+                text = stringResource(Res.string.ramp_pts_per_week, displayText),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black,
                 color = color

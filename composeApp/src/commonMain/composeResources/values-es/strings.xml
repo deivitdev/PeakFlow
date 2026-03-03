@@ -253,7 +253,7 @@
     <string name="ramp_status_productive">PRODUCTIVO</string>
     <string name="ramp_status_intense">INTENSO</string>
     <string name="ramp_status_risky">ALTO RIESGO</string>
-    <string name="ramp_pts_per_week">+%1$s pts/semana</string>
+    <string name="ramp_pts_per_week">%1$s pts/semana</string>
     <string name="ramp_rate_guide_title">GUÍA DE VELOCIDAD DE MEJORA (RAMP RATE)</string>
     <string name="ramp_rate_learn_more">¿Qué es mi velocidad de mejora?</string>
     <string name="ramp_level_maintenance">MANTENIMIENTO: Mantienes tu forma física estable. Bueno para fases de recuperación.</string>

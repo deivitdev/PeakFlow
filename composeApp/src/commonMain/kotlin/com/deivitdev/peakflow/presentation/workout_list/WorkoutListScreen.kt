@@ -30,6 +30,9 @@ import com.deivitdev.peakflow.presentation.components.SectionTitle
 import org.jetbrains.compose.resources.stringResource
 import peakflow.composeapp.generated.resources.*
 
+import com.deivitdev.peakflow.presentation.utils.formatDecimal
+import com.deivitdev.peakflow.presentation.utils.formatSeconds
+
 @Composable
 fun WorkoutListScreen(
     viewModel: WorkoutListViewModel,
@@ -253,24 +256,5 @@ private fun SubMetric(label: String, value: String) {
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-private fun formatDecimal(value: Float): String {
-    val multiplier = 100
-    val rounded = (value * multiplier).toInt()
-    val integerPart = rounded / multiplier
-    val fractionalPart = rounded % multiplier
-    return "$integerPart.${fractionalPart.toString().padStart(2, '0')}"
-}
-
-private fun formatSeconds(seconds: Int): String {
-    val h = seconds / 3600
-    val m = (seconds % 3600) / 60
-    val s = seconds % 60
-    return if (h > 0) {
-        "${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}"
-    } else {
-        "${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}"
     }
 }
