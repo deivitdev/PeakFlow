@@ -43,8 +43,8 @@ data class StravaBestEffortDto(
     val name: String,
     @SerialName("elapsed_time") val elapsedTime: Int,
     @SerialName("moving_time") val movingTime: Int,
-    @SerialName("start_index") val startIndex: Int,
-    @SerialName("end_index") val endIndex: Int,
+    @SerialName("start_index") val startIndex: Int? = null,
+    @SerialName("end_index") val endIndex: Int? = null,
     val distance: Float
 )
 
@@ -64,7 +64,7 @@ data class StravaSplitDto(
     val split: Int,
     @SerialName("average_speed") val averageSpeed: Float,
     @SerialName("average_heartrate") val averageHeartRate: Float? = null,
-    val pace_zone: Int? = null
+    @SerialName("pace_zone") val paceZone: Int? = null
 )
 
 @Serializable

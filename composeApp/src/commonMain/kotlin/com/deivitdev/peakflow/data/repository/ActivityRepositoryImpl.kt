@@ -9,10 +9,12 @@ import com.deivitdev.peakflow.data.remote.model.StravaAthleteDto
 import com.deivitdev.peakflow.db.Token
 import com.deivitdev.peakflow.domain.model.Activity
 import com.deivitdev.peakflow.domain.model.WorkoutType
+import com.deivitdev.peakflow.domain.model.StravaConfig
 import com.deivitdev.peakflow.domain.repository.ActivityRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.floatOrNull
@@ -22,19 +24,23 @@ import kotlinx.serialization.json.jsonPrimitive
 class ActivityRepositoryImpl(
     private val apiClient: StravaApiClient,
     private val localDataSource: LocalDataSource,
-    private val clientId: String = "",
-    private val clientSecret: String = ""
+    private val config: StravaConfig
 ) : ActivityRepository {
 
+    private var lastSyncTimestamp: Long = 0
+
     private suspend fun getValidToken(): Token? {
-        val token = localDataSource.getToken("current_user") ?: return null
+        val token = localDataSource.getToken("current_user") ?: run {
+            println("STRAVA_AUTH: No token found in database.")
+            return null
+        }
         val currentEpoch = Clock.System.now().epochSeconds
         
         // Refresh token 5 minutes before expiration
         if (token.expiresAt < currentEpoch + 300) {
-            println("STRAVA_AUTH: Token expired or about to expire. Refreshing...")
+            println("STRAVA_AUTH: Token expiring in ${token.expiresAt - currentEpoch}s. Refreshing...")
             try {
-                val newTokenDto = apiClient.refreshAccessToken(token.refreshToken, clientId, clientSecret)
+                val newTokenDto = apiClient.refreshAccessToken(token.refreshToken, config.clientId, config.clientSecret)
                 val newToken = Token(
                     id = "current_user",
                     accessToken = newTokenDto.accessToken,
@@ -42,25 +48,58 @@ class ActivityRepositoryImpl(
                     expiresAt = newTokenDto.expiresAt
                 )
                 localDataSource.insertToken(newToken)
-                println("STRAVA_AUTH: Token refreshed successfully.")
+                println("STRAVA_AUTH: Token refreshed successfully. New expiry: ${newToken.expiresAt}")
                 return newToken
             } catch (e: Exception) {
                 println("STRAVA_AUTH_ERROR: Failed to refresh token: ${e.message}")
-                // If refresh fails, we might want to delete the token or handle it upstream
                 return null
             }
         }
+        println("STRAVA_AUTH: Using existing valid token (expires in ${token.expiresAt - currentEpoch}s).")
         return token
     }
 
     override suspend fun syncActivities(): Result<Unit> = runCatching {
-        val token = getValidToken() 
-            ?: throw IllegalStateException("Not connected to Strava")
+        val currentEpoch = Clock.System.now().epochSeconds
+        // Throttling: Prevent syncing more than once every 60 seconds
+        if (currentEpoch - lastSyncTimestamp < 60) {
+            println("STRAVA_SYNC: Skipping sync (already synced less than 60s ago).")
+            return@runCatching
+        }
         
-        val remoteActivities = apiClient.getActivities(token.accessToken, perPage = 100)
+        println("STRAVA_SYNC: Starting sync...")
+        val token = getValidToken() 
+            ?: run {
+                println("STRAVA_SYNC_ERROR: No valid token found.")
+                throw IllegalStateException("Not connected to Strava")
+            }
+        
+        val latestDateStr = localDataSource.getLatestActivityDate()
+        println("STRAVA_SYNC: Latest activity in local DB: $latestDateStr")
+        
+        val afterTimestamp = latestDateStr?.let {
+            try {
+                Instant.parse(it).epochSeconds
+            } catch (e: Exception) {
+                println("STRAVA_SYNC_ERROR: Failed to parse date $it: ${e.message}")
+                null
+            }
+        }
+
+        println("STRAVA_SYNC: Fetching activities from API ${afterTimestamp?.let { "(after $latestDateStr)" } ?: "from beginning"}...")
+        val remoteActivities = apiClient.getActivities(
+            accessToken = token.accessToken, 
+            perPage = 100,
+            after = afterTimestamp
+        )
+        
+        println("STRAVA_SYNC: Received ${remoteActivities.size} new activities.")
         remoteActivities.forEach { dto ->
             localDataSource.insertActivity(dto.toDb())
         }
+        
+        lastSyncTimestamp = currentEpoch
+        println("STRAVA_SYNC: All activities saved to DB. Next sync allowed in 60s.")
     }
 
     override suspend fun getActivities(): List<Activity> {
@@ -154,7 +193,9 @@ class ActivityRepositoryImpl(
     }
 
     override suspend fun connect(code: String): Result<Unit> = runCatching {
-        val tokenDto = apiClient.getAccessToken(code, clientId, clientSecret)
+        println("STRAVA_AUTH: Getting access token for code $code...")
+        val tokenDto = apiClient.getAccessToken(code, config.clientId, config.clientSecret, config.redirectUri)
+        println("STRAVA_AUTH: Received token for user.")
         localDataSource.insertToken(
             Token(
                 id = "current_user",
@@ -163,14 +204,20 @@ class ActivityRepositoryImpl(
                 expiresAt = tokenDto.expiresAt
             )
         )
+        println("STRAVA_AUTH: Token saved to database.")
     }
 
     override suspend fun disconnect(): Result<Unit> = runCatching {
+        println("STRAVA_AUTH: Disconnecting from Strava (deleting local token).")
         localDataSource.deleteToken("current_user")
     }
 
     override suspend fun isConnected(): Boolean {
         return localDataSource.getToken("current_user") != null
+    }
+
+    override fun connectionStatusFlow(): Flow<Boolean> {
+        return localDataSource.getTokenFlow("current_user").map { it != null }
     }
 
     override suspend fun getAuthenticatedAthlete(): Result<StravaAthleteDto> = runCatching {

@@ -11,6 +11,7 @@ interface ActivityRepository {
     suspend fun connect(code: String): Result<Unit>
     suspend fun disconnect(): Result<Unit>
     suspend fun isConnected(): Boolean
+    fun connectionStatusFlow(): kotlinx.coroutines.flow.Flow<Boolean>
     suspend fun getAuthenticatedAthlete(): Result<StravaAthleteDto>
     suspend fun getAggregatedZones(startDate: String, endDate: String): com.deivitdev.peakflow.domain.model.AggregatedZones
     
