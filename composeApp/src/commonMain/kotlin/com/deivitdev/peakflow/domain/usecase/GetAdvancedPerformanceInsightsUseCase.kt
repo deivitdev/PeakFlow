@@ -35,18 +35,22 @@ class GetAdvancedPerformanceInsightsUseCase(
         val polarization28 = calculatePolarization(zones28)
 
         val activities = activityRepository.getActivities()
-        val lastActivity = activities.firstOrNull()?.let { activityRepository.getActivity(it.id) }
-
+        val validActivity = activities.take(10).firstNotNullOfOrNull { summary ->
+            val fullActivity = activityRepository.getActivity(summary.id)
+            if (fullActivity != null && (fullActivity.calories ?: 0f) > 0f && fullActivity.totalIntensitySeconds > 0) {
+                fullActivity
+            } else null
+        }
         
-        val metabolicSummary = lastActivity?.let { calculateMetabolic(it) } 
+        val metabolicSummary = validActivity?.let { calculateMetabolic(it) } 
             ?: MetabolicSummary(0f, 0f, 0)
 
         // Calculate dynamic hydration recommendation
         val profile = userRepository.getUserProfile().firstOrNull()
-        val hydrationAmount = lastActivity?.let { activity ->
+        val hydrationAmount = validActivity?.let { activity ->
             val ftp = profile?.ftpWatts?.toFloat() ?: 200f
             val intensityFactor = if (activity.weightedAveragePower != null) {
-                activity.weightedAveragePower / ftp
+                activity.weightedAveragePower!! / ftp
             } else {
                 activity.averagePower?.let { it / ftp } ?: 0.6f
             }

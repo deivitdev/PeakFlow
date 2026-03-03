@@ -41,7 +41,9 @@ data class Activity(
     val z3Seconds: Long = 0,
     val z4Seconds: Long = 0,
     val z5Seconds: Long = 0
-)
+) {
+    val totalIntensitySeconds: Long get() = z1Seconds + z2Seconds + z3Seconds + z4Seconds + z5Seconds
+}
 
 data class ActivityBestEffort(
     val name: String,
