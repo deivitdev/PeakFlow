@@ -33,6 +33,7 @@ fun StravaActivityDto.toDb(): ActivityDb {
         elapsedTime = elapsedTime.toLong(),
         totalElevationGain = totalElevationGain.toDouble(),
         startDate = startDate,
+        startDateLocal = startDateLocal,
         averageSpeed = (averageSpeed * 3.6), // Strava is in m/s, we want km/h
         maxSpeed = (maxSpeed * 3.6),
         averageHeartRate = averageHeartRate?.toDouble(),
@@ -121,6 +122,7 @@ fun ActivityDb.toDomain(): Activity {
         elapsedTimeSeconds = elapsedTime.toInt(),
         totalElevationGainMeters = totalElevationGain.toFloat(),
         startDate = startDate,
+        startDateLocal = startDateLocal,
         averageSpeedKmh = averageSpeed.toFloat(),
         maxSpeedKmh = maxSpeed.toFloat(),
         averageHeartRate = averageHeartRate?.toFloat(),

@@ -7,6 +7,7 @@ CREATE TABLE Activity (
     elapsedTime INTEGER NOT NULL,
     totalElevationGain REAL NOT NULL,
     startDate TEXT NOT NULL,
+    startDateLocal TEXT NOT NULL DEFAULT "",
     averageSpeed REAL NOT NULL,
     maxSpeed REAL NOT NULL,
     averageHeartRate REAL,
@@ -46,7 +47,7 @@ CREATE TABLE Token (
 insertActivity:
 INSERT OR REPLACE INTO Activity(
     id, name, type, distance, movingTime, elapsedTime,
-    totalElevationGain, startDate, averageSpeed, maxSpeed,
+    totalElevationGain, startDate, startDateLocal, averageSpeed, maxSpeed,
     averageHeartRate, maxHeartRate, calories, kilojoules,
     sufferScore, averagePower, location, polyline,
     weightedAverageWatts, maxWatts, deviceWatts,
@@ -54,7 +55,7 @@ INSERT OR REPLACE INTO Activity(
     splitsJson, bestEffortsJson, streams,
     z1Seconds, z2Seconds, z3Seconds, z4Seconds, z5Seconds
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectSummedZonesInRange:
 SELECT 

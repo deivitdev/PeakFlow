@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 
 import androidx.compose.foundation.clickable
 import com.deivitdev.peakflow.presentation.components.InteractiveMap
+import com.deivitdev.peakflow.presentation.utils.formatDate
 
 import com.deivitdev.peakflow.domain.model.AerobicStatus
 
@@ -191,7 +192,7 @@ fun ActivityHeader(activity: Activity, userName: String?, userPhotoUrl: String?,
                         )
                     }
                     Text(
-                        text = activity.startDate,
+                        text = formatDate(activity.startDateLocal),
                         style = MaterialTheme.typography.labelSmall,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

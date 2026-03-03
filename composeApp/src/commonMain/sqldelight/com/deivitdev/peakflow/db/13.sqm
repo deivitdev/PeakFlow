@@ -1,0 +1,2 @@
+-- Migration 13: Add startDateLocal to Activity table
+ALTER TABLE Activity ADD COLUMN startDateLocal TEXT NOT NULL DEFAULT "";

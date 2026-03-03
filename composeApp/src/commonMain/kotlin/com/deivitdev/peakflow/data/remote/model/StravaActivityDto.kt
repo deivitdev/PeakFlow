@@ -14,6 +14,7 @@ data class StravaActivityDto(
     @SerialName("elapsed_time") val elapsedTime: Int,
     @SerialName("total_elevation_gain") val totalElevationGain: Float,
     @SerialName("start_date") val startDate: String,
+    @SerialName("start_date_local") val startDateLocal: String,
     @SerialName("average_speed") val averageSpeed: Float,
     @SerialName("max_speed") val maxSpeed: Float,
     @SerialName("average_heartrate") val averageHeartRate: Float? = null,

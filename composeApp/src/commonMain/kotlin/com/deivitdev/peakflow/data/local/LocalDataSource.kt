@@ -24,6 +24,7 @@ class LocalDataSource(val database: PeakFlowDatabase) {
             activity.elapsedTime,
             activity.totalElevationGain,
             activity.startDate,
+            activity.startDateLocal,
             activity.averageSpeed,
             activity.maxSpeed,
             activity.averageHeartRate,

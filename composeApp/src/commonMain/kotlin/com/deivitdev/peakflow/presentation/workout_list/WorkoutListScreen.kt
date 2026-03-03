@@ -32,6 +32,7 @@ import peakflow.composeapp.generated.resources.*
 
 import com.deivitdev.peakflow.presentation.utils.formatDecimal
 import com.deivitdev.peakflow.presentation.utils.formatSeconds
+import com.deivitdev.peakflow.presentation.utils.formatDate
 
 @Composable
 fun WorkoutListScreen(
@@ -177,7 +178,7 @@ fun WorkoutItem(activity: Activity, onClick: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = activity.startDate.take(10),
+                    text = formatDate(activity.startDateLocal),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )

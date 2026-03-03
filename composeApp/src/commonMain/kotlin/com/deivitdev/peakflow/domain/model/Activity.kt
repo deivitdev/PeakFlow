@@ -9,6 +9,7 @@ data class Activity(
     val elapsedTimeSeconds: Int,
     val totalElevationGainMeters: Float,
     val startDate: String,
+    val startDateLocal: String,
     val averageSpeedKmh: Float,
     val maxSpeedKmh: Float,
     val heartRateSeries: List<Int>? = null,
